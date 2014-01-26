@@ -1,0 +1,16 @@
+(require ['oauth.client :as 
+'oauth])
+(exit)
+(exit_
+)
+(exit)
+(server)
+(use 'ring.util.serve) 
+(exit)
+(.stop server)
+(ns shelfshare.web)
+(def server -main)
+(server)
+(.stop server)
+(server)
+(exit)
