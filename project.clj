@@ -8,9 +8,9 @@
                  [hiccup "1.0.4"]
                  [ring/ring-jetty-adapter "1.1.0"]
                  [clj-oauth "1.4.1"]
+                 [clj-http "0.7.8"] 
                  [ring/ring-devel "1.1.0"]
                  [ring-basic-authentication "1.0.1"]
-                 [joodo "1.1.2"]
                  [environ "0.2.1"]
                  [com.cemerick/drawbridge "0.0.6"]]
   :min-lein-version "2.0.0"

@@ -7,7 +7,7 @@
             [clojure.java.io :as io]
             [ring.middleware.stacktrace :as trace]
             [ring.middleware.session :as session]
-            [ring.util.response :refer  [redirect]]
+            [ring.util.response :refer  [redirect response]]
             [ring.middleware.session.cookie :as cookie]
             [ring.adapter.jetty :as jetty]
             [ring.middleware.basic-authentication :as basic]
@@ -21,20 +21,31 @@
   (-> (drawbridge/ring-handler)
       (session/wrap-session)
       (basic/wrap-basic-authentication authenticated?)))
-
-
+ 
 (defroutes app
   (ANY "/repl" {:as req}
        (drawbridge req))
-  (GET "/" [] (redirect goodreads/auth-req))
-  (GET "/dex" {session :session} (str session))
-  (GET "/oauth" {params :params}
-       (assoc 
-         (redirect "/dex")
-         :session
-         {:auth-token 
-          {:value params }}))
+  (GET "/" [] (let [req-tok (goodreads/request-token)]
+               (assoc (redirect (goodreads/auth-req req-tok))
+                   :session {:request-token req-tok})))
 
+  (GET "/dex" {{:keys [access-token goodreads-id]} :session} 
+       (response (str 
+                   (goodreads/get-freinds 
+                     access-token goodreads-id))))
+
+  (GET "/oauth" {params :params session :session}
+         (let [req-tok (:request-token session)
+               access-tok (goodreads/access-token req-tok)
+               gr-id   (goodreads/auth-user access-tok)]
+           (condp = (:authorize params)
+             "0" "401"
+             "1" (assoc
+                 (redirect "/dex")
+                 :session 
+                 {:access-token access-tok 
+                  :goodreads-id gr-id 
+                  }))))
   (ANY "*" []
        (route/not-found (slurp (io/resource "404.html")))))
 
